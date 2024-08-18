@@ -32,7 +32,7 @@ const registerUser=asyncHandler(async(req,res)=>{
     }
 
     //to check if a user already exits or not
-    const existedUser=User.findOne({
+    const existedUser=await User.findOne({
         $or:[{username},{email}]
     })
 
@@ -44,7 +44,11 @@ const registerUser=asyncHandler(async(req,res)=>{
     //multer give files access
     const avatarLocalPath=req.files?.avatar[0]?.path
     console.log(req.files);
-    const coverImageLocalPath=req.files?.coverImage[0]?.path
+    //const coverImageLocalPath=req.files?.coverImage[0]?.path
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length>0){
+        coverImageLocalPath=req.files.coverImage[0].path;
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400,"Avatar file is required")
@@ -60,14 +64,14 @@ const registerUser=asyncHandler(async(req,res)=>{
     const user=await User.create({
         fullName,
         avatar:avatar.url,
-        coverImage:coverImage?.url || "", //checking if it exists or not i.e corner case checking
+        coverImage: coverImage?.url || "", //checking if it exists or not i.e corner case checking
         email,
         password,
-        username:username.toLowerCase()
+        username: username.toLowerCase()
     })
     const createdUser = await User.findById(user._id).select(
         //likho ki kya kya nahi chaiye
-        "~password refreshToken"
+        "~password ~refreshToken"
     )
     if(!createdUser){
         throw new ApiError(500,"Error while registering new user")
