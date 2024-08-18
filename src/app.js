@@ -18,5 +18,10 @@ app.use(express.static("public"))
 //get data using secure cookies
 app.use(cookieParser())
 
+//routes
+import userRouter from './routes/user.routes.js'
 
+//routes declaration
+app.use("/api/v1/users",userRouter)
+//this will look like: http://localhost:8000/api/v1/users  : /register or /login
 export {app}
